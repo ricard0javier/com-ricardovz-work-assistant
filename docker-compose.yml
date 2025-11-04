@@ -1,0 +1,181 @@
+services:
+  # MongoDB Atlas Local - Shared database
+  mongodb:
+    image: mongodb/mongodb-atlas-local:8.2.1
+    container_name: work-assistant-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGODB_INITDB_ROOT_USERNAME=admin
+      - MONGODB_INITDB_ROOT_PASSWORD=admin
+    volumes:
+      - ${HOME}/.work-assistant/mongodb/data:/data/db
+      - ${HOME}/.work-assistant/mongodb/config:/data/configdb
+    networks:
+      - work-assistant-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redpanda - Event streaming
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v25.2.10
+    container_name: work-assistant-redpanda
+    restart: unless-stopped
+    command:
+      - redpanda
+      - start
+      - --kafka-addr
+      - internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr
+      - internal://redpanda:9092,external://localhost:19092
+      - --pandaproxy-addr
+      - internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr
+      - internal://redpanda:8082,external://localhost:18082
+      - --schema-registry-addr
+      - internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --rpc-addr
+      - redpanda:33145
+      - --advertise-rpc-addr
+      - redpanda:33145
+      - --mode
+      - dev-container
+      - --smp
+      - "1"
+      - --default-log-level=info
+    ports:
+      - "18081:18081"
+      - "18082:18082"
+      - "19092:19092"
+      - "19644:9644"
+    volumes:
+      - ${HOME}/.work-assistant/redpanda/data:/var/lib/redpanda/data
+    networks:
+      - work-assistant-network
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -q 'healthy' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redpanda Console - UI for Redpanda
+  redpanda-console:
+    image: docker.redpanda.com/redpandadata/console:v3.2.2
+    container_name: work-assistant-redpanda-console
+    restart: unless-stopped
+    entrypoint: /bin/sh
+    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
+    ports:
+      - "8080:8080"
+    environment:
+      CONSOLE_LICENSE_TYPE: community
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda:9092"]
+        schemaRegistry:
+          enabled: false
+          urls: ["http://redpanda:8081"]
+        redpanda:
+          adminApi:
+            enabled: false
+            urls: ["http://redpanda:9644"]
+    networks:
+      - work-assistant-network
+    depends_on:
+      - redpanda
+
+  # N8N - Workflow automation
+  n8n:
+    image: n8nio/n8n:1.119.0
+    container_name: work-assistant-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-admin}
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_DATABASE=n8n
+      - DB_POSTGRESDB_USER=postgres
+      - DB_POSTGRESDB_PASSWORD=postgres
+    volumes:
+      - ${HOME}/.work-assistant/n8n/data:/home/node/.n8n
+    networks:
+      - work-assistant-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Prefect - Workflow orchestration
+  prefect-server:
+    image: prefecthq/prefect:3.5.0-python3.14
+    container_name: work-assistant-prefect-server
+    restart: unless-stopped
+    command: prefect server start --host 0.0.0.0
+    ports:
+      - "4200:4200"
+    environment:
+      - PREFECT_API_DATABASE_CONNECTION_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/prefect
+    volumes:
+      - ${HOME}/.work-assistant/prefect/data:/root/.prefect
+    networks:
+      - work-assistant-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Browserless - Headless browser
+  browserless:
+    image: browserless/chrome:1.61.1-chrome-stable
+    container_name: work-assistant-browserless
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - CONNECTION_TIMEOUT=60000
+      - MAX_CONCURRENT_SESSIONS=10
+    volumes:
+      - ${HOME}/.work-assistant/browserless/data:/app/data
+    networks:
+      - work-assistant-network
+
+  # PostgreSQL - Shared database for N8N and Prefect
+  postgres:
+    image: postgres:18.0-alpine
+    container_name: work-assistant-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_MULTIPLE_DATABASES: n8n,prefect
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh:ro
+    networks:
+      - work-assistant-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  work-assistant-network:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local
+    driver_opts:
+      type: "none"
+      device: "${HOME}/.work-assistant/postgres/data"
+      o: "bind"
