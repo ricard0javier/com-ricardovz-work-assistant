@@ -66,3 +66,6 @@ Thumbs.db
 *.pyo
 *.pyd
 
+# custom data
+shared/nginx/data
+src

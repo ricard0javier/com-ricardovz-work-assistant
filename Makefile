@@ -1,5 +1,9 @@
 .PHONY: help clean install init dev up down restart logs ps stop-all start-all
 
+SHELL = /bin/zsh
+CONDA_ACTIVATE = source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
+ENV_NAME = work-assistant
+
 help: ## Show this help message
 	@echo 'Usage: make [target]'
 	@echo ''
@@ -23,18 +27,14 @@ conda-update: ## Update conda environment
 	@echo "Done"
 
 install: ## Verify conda environment is set up (dependencies already installed via conda-env)
-	@echo "Checking conda environment..."
-	@if [ -z "$$CONDA_DEFAULT_ENV" ] || [ "$$CONDA_DEFAULT_ENV" != "work-assistant" ]; then \
-		echo "Error: Conda environment 'work-assistant' is not activated."; \
-		echo "Please run: conda activate work-assistant"; \
-		echo "Or create it with: make conda-env"; \
-		exit 1; \
-	fi
-	@echo "Conda environment is active. All dependencies are installed via environment.yml"
+	conda env create -f environment.yml --name $(ENV_NAME) || true && \
+	$(CONDA_ACTIVATE) $(ENV_NAME) && \
+	pip install --upgrade pip
 
 init: ## Create required directories for Docker volumes
 	@echo "Creating required directories..."
 	@mkdir -p ~/.work-assistant/{mongodb/{data,config},postgres/data,redpanda/data,n8n/data,prefect/data,browserless/data}
+	@mkdir -p ./shared/nginx/data
 	@echo "Ensuring proper permissions..."
 	@chmod 755 ~/.work-assistant 2>/dev/null || true
 	@chmod 755 ~/.work-assistant/postgres 2>/dev/null || true
@@ -49,6 +49,8 @@ dev: init ## Start all services in development mode
 	@echo "  - Prefect: http://localhost:4200"
 	@echo "  - Redpanda Console: http://localhost:8080"
 	@echo "  - Browserless: http://localhost:3000"
+	@echo "  - OpenWebUI: http://localhost:3001"
+	@echo "  - Nginx: http://localhost:9080"
 	@echo "  - MongoDB: localhost:27017"
 	@echo "  - PostgreSQL: localhost:5432"
 

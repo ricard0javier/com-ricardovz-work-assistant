@@ -23,6 +23,8 @@ This project includes the following services:
 - **Redpanda** - Kafka-compatible event streaming (Port: 19092)
 - **Redpanda Console** - UI for Redpanda management (Port: 8080)
 - **Browserless** - Headless browser service (Port: 3000)
+- **OpenWebUI** - Web UI for LLMs (Port: 3001)
+- **Nginx** - Web server for static content (Port: 9080)
 
 ## Prerequisites
 
@@ -65,6 +67,10 @@ Key configuration variables:
 - `KAFKA_AUTO_OFFSET_RESET` - Kafka offset reset policy (default: `earliest`)
 - `KAFKA_CONSUMER_GROUP` - Consumer group ID (default: `demo-group`)
 
+#### OpenWebUI Configuration
+
+- `OPENWEBUI_SECRET_KEY` - Secret key for OpenWebUI sessions (default: `default-secret-key-change-in-production`)
+
 #### Logging
 
 - `LOG_LEVEL` - Logging level (default: `INFO`)
@@ -102,6 +108,8 @@ Key configuration variables:
    - Prefect: http://localhost:4200
    - Redpanda Console: http://localhost:8080
    - Browserless: http://localhost:3000
+   - OpenWebUI: http://localhost:3001
+   - Nginx: http://localhost:9080
    - MongoDB: `mongodb://admin:admin@localhost:27017`
    - PostgreSQL: `postgresql://postgres:postgres@localhost:5432`
 
@@ -143,6 +151,8 @@ All service data is persisted to `~/.work-assistant/{service_name}/`:
 - `~/.work-assistant/prefect/` - Prefect flows and data
 - `~/.work-assistant/redpanda/` - Redpanda data
 - `~/.work-assistant/browserless/` - Browserless data
+- `~/.work-assistant/openwebui/` - OpenWebUI data
+- `./shared/nginx/data/` - Nginx static content (project directory)
 
 This ensures your data survives container restarts and system reboots.
 
@@ -158,6 +168,9 @@ This ensures your data survives container restarts and system reboots.
 ├── .dockerignore          # Docker ignore rules
 ├── scripts/               # Utility scripts
 │   └── init-multiple-databases.sh  # PostgreSQL multi-database init
+├── shared/                # Shared resources
+│   └── nginx/            # Nginx static content
+│       └── data/         # Static files served by Nginx
 ├── src/                   # Source code
 │   ├── __init__.py
 │   └── config/           # Configuration management
@@ -194,5 +207,7 @@ All images are pinned to specific versions for stability:
 - **N8N**: `1.119.0` (latest 1.x)
 - **Prefect**: `3.5.0-python3.14` (latest 3.x)
 - **Browserless**: `1.61.1-chrome-stable` (latest 1.x)
+- **OpenWebUI**: `main` (latest main branch)
+- **Nginx**: `1.29.3` (latest 1.x)
 
 To update images, modify `docker-compose.yml` and run `docker-compose pull` followed by `docker-compose up -d`.
