@@ -13,7 +13,7 @@ help: ## Show this help message
 clean: ## Clean build artifacts and volumes
 	@echo "Cleaning build artifacts..."
 	docker-compose down -v
-	rm -rf ~/.work-assistant
+	# rm -rf ~/.work-assistant
 	@echo "Done"
 
 conda-env: ## Create conda environment from environment.yml
@@ -33,7 +33,7 @@ install: ## Verify conda environment is set up (dependencies already installed v
 
 init: ## Create required directories for Docker volumes
 	@echo "Creating required directories..."
-	@mkdir -p ~/.work-assistant/{mongodb/{data,config},postgres/data,redpanda/data,n8n/data,prefect/data,browserless/data}
+	@mkdir -p ~/.work-assistant/{mongodb/{data,config},postgres/data,redpanda/data,n8n/data,prefect/data,browserless/data,openwebui/data,traefik/data}
 	@mkdir -p ./shared/nginx/data
 	@echo "Ensuring proper permissions..."
 	@chmod 755 ~/.work-assistant 2>/dev/null || true
@@ -51,6 +51,7 @@ dev: init ## Start all services in development mode
 	@echo "  - Browserless: http://localhost:3000"
 	@echo "  - OpenWebUI: http://localhost:3001"
 	@echo "  - Nginx: http://localhost:9080"
+	@echo "  - Traefik Dashboard: http://localhost:8081/dashboard/"
 	@echo "  - MongoDB: localhost:27017"
 	@echo "  - PostgreSQL: localhost:5432"
 

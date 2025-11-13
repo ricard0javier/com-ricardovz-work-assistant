@@ -25,6 +25,7 @@ This project includes the following services:
 - **Browserless** - Headless browser service (Port: 3000)
 - **OpenWebUI** - Web UI for LLMs (Port: 3001)
 - **Nginx** - Web server for static content (Port: 9080)
+- **Traefik** - Reverse proxy and load balancer (Port: 80, Dashboard: 8081)
 
 ## Prerequisites
 
@@ -110,6 +111,7 @@ Key configuration variables:
    - Browserless: http://localhost:3000
    - OpenWebUI: http://localhost:3001
    - Nginx: http://localhost:9080
+   - Traefik Dashboard: http://localhost:8081/dashboard/
    - MongoDB: `mongodb://admin:admin@localhost:27017`
    - PostgreSQL: `postgresql://postgres:postgres@localhost:5432`
 
@@ -152,6 +154,7 @@ All service data is persisted to `~/.work-assistant/{service_name}/`:
 - `~/.work-assistant/redpanda/` - Redpanda data
 - `~/.work-assistant/browserless/` - Browserless data
 - `~/.work-assistant/openwebui/` - OpenWebUI data
+- `~/.work-assistant/traefik/` - Traefik data
 - `./shared/nginx/data/` - Nginx static content (project directory)
 
 This ensures your data survives container restarts and system reboots.
@@ -209,5 +212,6 @@ All images are pinned to specific versions for stability:
 - **Browserless**: `1.61.1-chrome-stable` (latest 1.x)
 - **OpenWebUI**: `main` (latest main branch)
 - **Nginx**: `1.29.3` (latest 1.x)
+- **Traefik**: `v3.1.0` (latest 3.x)
 
 To update images, modify `docker-compose.yml` and run `docker-compose pull` followed by `docker-compose up -d`.

@@ -9,6 +9,7 @@ services:
     environment:
       - MONGODB_INITDB_ROOT_USERNAME=admin
       - MONGODB_INITDB_ROOT_PASSWORD=admin
+      - MONGODB_INITDB_DATABASE=test
     volumes:
       - ${HOME}/.work-assistant/mongodb/data:/data/db
       - ${HOME}/.work-assistant/mongodb/config:/data/configdb
@@ -105,6 +106,7 @@ services:
       - DB_POSTGRESDB_DATABASE=n8n
       - DB_POSTGRESDB_USER=postgres
       - DB_POSTGRESDB_PASSWORD=postgres
+      - N8N_SECURE_COOKIE=false
     volumes:
       - ${HOME}/.work-assistant/n8n/data:/home/node/.n8n
     networks:
@@ -195,6 +197,43 @@ services:
       - ./shared/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - work-assistant-network
+
+  # Traefik - Reverse proxy and load balancer
+  traefik:
+    image: traefik:v3.1.0
+    container_name: work-assistant-traefik
+    restart: unless-stopped
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=true"
+      - '--providers.docker.defaultRule=Host(`{{ index .Labels "com.docker.compose.service" }}.localhost`)'
+      - "--providers.docker.network=work-assistant-network"
+      - "--entrypoints.web.address=:80"
+      - "--log.level=INFO"
+    ports:
+      - "80:80"
+      - "8081:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${HOME}/.work-assistant/traefik/data:/data
+    networks:
+      - work-assistant-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`localhost`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.entrypoints=web"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:8080/ping || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 networks:
   work-assistant-network:
