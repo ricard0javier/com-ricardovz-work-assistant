@@ -164,6 +164,27 @@ services:
     networks:
       - work-assistant-network
 
+  # MCPO - MCP-to-OpenAPI proxy server
+  # https://github.com/open-webui/mcpo
+  # https://github.com/MarkusPfundstein/mcp-obsidian/pull/89
+  mcpo:
+    image: ghcr.io/open-webui/mcpo:git-91e8f94
+    container_name: work-assistant-mcpo
+    # restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ${HOME}/.work-assistant/mcpo/config:/app/config:ro
+      - ${HOME}/.work-assistant/mcpo/tokens:/root/.mcpo/tokens
+    command:
+      - "--api-key"
+      - "top-secret"
+      - "--hot-reload"
+      - "--config"
+      - "/app/config/config.json"
+    networks:
+      - work-assistant-network
+
   # PostgreSQL - Shared database for N8N and Prefect
   postgres:
     image: postgres:18.0-alpine

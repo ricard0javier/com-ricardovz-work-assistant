@@ -24,6 +24,7 @@ This project includes the following services:
 - **Redpanda Console** - UI for Redpanda management (Port: 8080)
 - **Browserless** - Headless browser service (Port: 3000)
 - **OpenWebUI** - Web UI for LLMs (Port: 3001)
+- **MCPO** - MCP-to-OpenAPI proxy server (Port: 8000)
 - **Nginx** - Web server for static content (Port: 9080)
 - **Traefik** - Reverse proxy and load balancer (Port: 80, Dashboard: 8081)
 
@@ -72,6 +73,11 @@ Key configuration variables:
 
 - `OPENWEBUI_SECRET_KEY` - Secret key for OpenWebUI sessions (default: `default-secret-key-change-in-production`)
 
+#### MCPO Configuration
+
+- `MCPO_API_KEY` - API key for MCPO authentication (default: `top-secret`)
+- MCPO config file: `~/.work-assistant/mcpo/config/config.json` (see MCPO setup below)
+
 #### Logging
 
 - `LOG_LEVEL` - Logging level (default: `INFO`)
@@ -110,12 +116,40 @@ Key configuration variables:
    - Redpanda Console: http://localhost:8080
    - Browserless: http://localhost:3000
    - OpenWebUI: http://localhost:3001
+   - MCPO: http://localhost:8000 (API docs: http://localhost:8000/docs)
    - Nginx: http://localhost:9080
    - Traefik Dashboard: http://localhost:8081/dashboard/
    - MongoDB: `mongodb://admin:admin@localhost:27017`
    - PostgreSQL: `postgresql://postgres:postgres@localhost:5432`
 
-5. **Stop all services:**
+5. **Configure MCPO (optional):**
+
+   Create the MCPO configuration directory and file:
+
+   ```bash
+   mkdir -p ~/.work-assistant/mcpo/config
+   ```
+
+   Create `~/.work-assistant/mcpo/config/config.json` with your MCP server configurations:
+
+   ```json
+   {
+     "mcpServers": {
+       "memory": {
+         "command": "npx",
+         "args": ["-y", "@modelcontextprotocol/server-memory"]
+       },
+       "time": {
+         "command": "uvx",
+         "args": ["mcp-server-time", "--local-timezone=America/New_York"]
+       }
+     }
+   }
+   ```
+
+   Each MCP tool will be accessible at `http://localhost:8000/<tool>` with OpenAPI docs at `http://localhost:8000/<tool>/docs`.
+
+6. **Stop all services:**
    ```bash
    make down
    ```
@@ -154,6 +188,7 @@ All service data is persisted to `~/.work-assistant/{service_name}/`:
 - `~/.work-assistant/redpanda/` - Redpanda data
 - `~/.work-assistant/browserless/` - Browserless data
 - `~/.work-assistant/openwebui/` - OpenWebUI data
+- `~/.work-assistant/mcpo/` - MCPO config and tokens
 - `~/.work-assistant/traefik/` - Traefik data
 - `./shared/nginx/data/` - Nginx static content (project directory)
 
@@ -211,6 +246,7 @@ All images are pinned to specific versions for stability:
 - **Prefect**: `3.5.0-python3.14` (latest 3.x)
 - **Browserless**: `1.61.1-chrome-stable` (latest 1.x)
 - **OpenWebUI**: `main` (latest main branch)
+- **MCPO**: `v0.0.19` (latest release)
 - **Nginx**: `1.29.3` (latest 1.x)
 - **Traefik**: `v3.1.0` (latest 3.x)
 

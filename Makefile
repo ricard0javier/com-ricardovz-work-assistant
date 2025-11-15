@@ -33,7 +33,7 @@ install: ## Verify conda environment is set up (dependencies already installed v
 
 init: ## Create required directories for Docker volumes
 	@echo "Creating required directories..."
-	@mkdir -p ~/.work-assistant/{mongodb/{data,config},postgres/data,redpanda/data,n8n/data,prefect/data,browserless/data,openwebui/data,traefik/data}
+	@mkdir -p ~/.work-assistant/{mongodb/{data,config},postgres/data,redpanda/data,n8n/data,prefect/data,browserless/data,openwebui/data,mcpo/{config,tokens},traefik/data}
 	@mkdir -p ./shared/nginx/data
 	@echo "Ensuring proper permissions..."
 	@chmod 755 ~/.work-assistant 2>/dev/null || true
@@ -50,6 +50,7 @@ dev: init ## Start all services in development mode
 	@echo "  - Redpanda Console: http://localhost:8080"
 	@echo "  - Browserless: http://localhost:3000"
 	@echo "  - OpenWebUI: http://localhost:3001"
+	@echo "  - MCPO: http://localhost:8000 (API docs: http://localhost:8000/docs)"
 	@echo "  - Nginx: http://localhost:9080"
 	@echo "  - Traefik Dashboard: http://localhost:8081/dashboard/"
 	@echo "  - MongoDB: localhost:27017"
