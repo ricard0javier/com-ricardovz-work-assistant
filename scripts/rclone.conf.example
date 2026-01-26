@@ -1,0 +1,16 @@
+# Example rclone configuration for MinIO S3
+# Copy this file to ~/.config/rclone/rclone.conf and update with your credentials
+# Set permissions: chmod 600 ~/.config/rclone/rclone.conf
+
+[minio-backup]
+type = s3
+provider = Minio
+env_auth = false
+access_key_id = YOUR_ACCESS_KEY_HERE
+secret_access_key = YOUR_SECRET_KEY_HERE
+region = other-v2-signature
+endpoint = https://s3.example.com
+force_path_style = true
+sign_accept_encoding = false
+location_constraint = 
+server_side_encryption = 

@@ -221,7 +221,7 @@ services:
 
   # Traefik - Reverse proxy and load balancer
   traefik:
-    image: traefik:v3.1.0
+    image: traefik:v3.6.5
     container_name: work-assistant-traefik
     restart: unless-stopped
     command:

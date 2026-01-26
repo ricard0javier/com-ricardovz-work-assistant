@@ -172,6 +172,7 @@ Key configuration variables:
 - `make restart` - Restart all services
 - `make logs` - Show logs from all services
 - `make ps` - Show status of all services
+- `make backup` - Backup data to MinIO using rclone
 - `make stop-{service}` - Stop a specific service (e.g., `make stop-n8n`)
 - `make start-{service}` - Start a specific service (e.g., `make start-n8n`)
 - `make logs-{service}` - Show logs for a specific service (e.g., `make logs-n8n`)
@@ -192,7 +193,7 @@ All service data is persisted to `~/.work-assistant/{service_name}/`:
 - `~/.work-assistant/traefik/` - Traefik data
 - `./shared/nginx/data/` - Nginx static content (project directory)
 
-This ensures your data survives container restarts and system reboots.
+This ensures your data survives container restarts and system reboots. For off-site backups, use `make backup`.
 
 ## Project Structure
 
