@@ -1,4 +1,4 @@
-.PHONY: help clean install init dev up down restart logs ps stop-all start-all
+.PHONY: help clean install init dev up down restart logs ps backup stop-all start-all
 
 SHELL = /bin/zsh
 CONDA_ACTIVATE = source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
@@ -70,6 +70,15 @@ logs: ## Show logs from all services
 
 ps: ## Show status of all services
 	docker-compose ps
+
+backup: ## Backup data to MinIO
+	@echo "Starting backup to MinIO..."
+	./scripts/backup-to-minio.sh \
+		--source ${HOME}/.work-assistant \
+		--config ~/.config/rclone/rclone.conf \
+		--remote-name minio-backup \
+		--bucket com-ricardovz-work-assistant
+	@echo "Backup completed successfully"
 
 stop-all: ## Stop all services and remove containers
 	docker-compose down
