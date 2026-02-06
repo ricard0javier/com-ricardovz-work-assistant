@@ -12,7 +12,7 @@ help: ## Show this help message
 
 clean: ## Clean build artifacts and volumes
 	@echo "Cleaning build artifacts..."
-	docker-compose down -v
+	docker compose down -v
 	# rm -rf ~/.work-assistant
 	@echo "Done"
 
@@ -43,7 +43,7 @@ init: ## Create required directories for Docker volumes
 
 dev: init ## Start all services in development mode
 	@echo "Starting development environment..."
-	docker-compose up -d
+	docker compose up -d
 	@echo "Services started. Access:"
 	@echo "  - N8N: http://localhost:5678"
 	@echo "  - Prefect: http://localhost:4200"
@@ -57,19 +57,19 @@ dev: init ## Start all services in development mode
 	@echo "  - PostgreSQL: localhost:5432"
 
 up: init ## Start all services
-	docker-compose up -d
+	docker compose up -d
 
 down: ## Stop all services
-	docker-compose down
+	docker compose down
 
 restart: ## Restart all services
-	docker-compose restart
+	docker compose restart
 
 logs: ## Show logs from all services
-	docker-compose logs -f
+	docker compose logs -f
 
 ps: ## Show status of all services
-	docker-compose ps
+	docker compose ps
 
 backup: ## Backup data to MinIO
 	@echo "Starting backup to MinIO..."
@@ -81,17 +81,17 @@ backup: ## Backup data to MinIO
 	@echo "Backup completed successfully"
 
 stop-all: ## Stop all services and remove containers
-	docker-compose down
+	docker compose down
 
 start-all: init ## Start all services
-	docker-compose up -d
+	docker compose up -d
 
 stop-%: ## Stop a specific service (e.g., make stop-n8n)
-	docker-compose stop $(patsubst stop-%,%,$@)
+	docker compose stop $(patsubst stop-%,%,$@)
 
 start-%: ## Start a specific service (e.g., make start-n8n)
-	docker-compose start $(patsubst start-%,%,$@)
+	docker compose start $(patsubst start-%,%,$@)
 
 logs-%: ## Show logs for a specific service (e.g., make logs-n8n)
-	docker-compose logs -f $(patsubst logs-%,%,$@)
+	docker compose logs -f $(patsubst logs-%,%,$@)
 

@@ -199,7 +199,7 @@ This ensures your data survives container restarts and system reboots. For off-s
 
 ```
 .
-├── docker-compose.yml      # Docker Compose configuration
+├── docker compose.yml      # Docker Compose configuration
 ├── Makefile                # Development commands
 ├── environment.yml         # Conda environment specification (Python dependencies)
 ├── .env.example           # Example environment variables
@@ -251,4 +251,4 @@ All images are pinned to specific versions for stability:
 - **Nginx**: `1.29.3` (latest 1.x)
 - **Traefik**: `v3.1.0` (latest 3.x)
 
-To update images, modify `docker-compose.yml` and run `docker-compose pull` followed by `docker-compose up -d`.
+To update images, modify `docker compose.yml` and run `docker compose pull` followed by `docker compose up -d`.
